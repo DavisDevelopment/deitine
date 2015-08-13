@@ -8,6 +8,9 @@ import tannus.ds.promises.*;
 
 import deitine.time.Clock;
 import deitine.time.GameDate;
+import deitine.core.Entity;
+
+using Lambda;
 
 class Engine extends EventDispatcher {
 	/* Constructor Function */
@@ -20,6 +23,7 @@ class Engine extends EventDispatcher {
 			launch = new Signal();
 			shutdown = new Signal();
 			tick = new Signal();
+			entities = new Array();
 
 			instance = this;
 
@@ -56,10 +60,22 @@ class Engine extends EventDispatcher {
 	}
 
 	/**
+	  * Attach some Entity to [this] Engine
+	  */
+	public function attach(child : Entity):Void {
+		if (!entities.has( child ))
+			entities.push( child );
+	}
+
+	/**
 	  * Method called for each 'tick' of [clock]
 	  */
 	private function clockTick(d : Int):Void {
 		date.minutes += 1;
+
+		for (child in entities) {
+			child.tick( date );
+		}
 
 		tick.call( date );
 	}
@@ -67,6 +83,7 @@ class Engine extends EventDispatcher {
 /* === Instance Fields === */
 
 	private var clock : Clock;
+	private var entities : Array<Entity>;
 
 	public var date : GameDate;
 	public var launch : Signal<Engine>;
@@ -77,5 +94,5 @@ class Engine extends EventDispatcher {
 
 	public static var instance : Null<Engine> = null;
 
-	public static var SECOND:Int = 1000;
+	public static var SECOND:Int = 500;
 }
