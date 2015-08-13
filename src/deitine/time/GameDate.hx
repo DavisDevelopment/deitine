@@ -149,6 +149,23 @@ abstract GameDate (Ptr<Int>) {
 		return toDate().toString();
 	}
 
+	/**
+	  * To Int
+	  */
+	@:to
+	public inline function toInt():Int {
+		return totalSeconds;
+	}
+
+	/**
+	  * From Int
+	  */
+	@:from
+	public static inline function fromInt(i : Int):GameDate {
+		var d:GameDate = cast Ptr.create(i);
+		return d;
+	}
+
 /* === Static Fields === */
 
 	private static inline var M_HOUR:Int = 60;
