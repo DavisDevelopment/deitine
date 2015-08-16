@@ -5,10 +5,12 @@ import tannus.io.Ptr;
 import tannus.io.EventDispatcher;
 import tannus.ds.Promise;
 import tannus.ds.promises.*;
+import tannus.ds.Object;
 
 import deitine.time.Clock;
 import deitine.time.GameDate;
 import deitine.core.Entity;
+import deitine.core.Player;
 
 using Lambda;
 
@@ -18,12 +20,14 @@ class Engine extends EventDispatcher {
 		super();
 
 		if (instance == null) {
-			clock = new Clock( SECOND );
+			clock = new Clock(10 * 1000);
 			date = new GameDate(0, 0, 0);
 			launch = new Signal();
 			shutdown = new Signal();
 			tick = new Signal();
 			entities = new Array();
+
+			player = new Player();
 
 			instance = this;
 
@@ -68,13 +72,36 @@ class Engine extends EventDispatcher {
 	}
 
 	/**
+	  * Obtain an Array of all Entities attached to [this] Engine
+	  */
+	private function getAll():Array<Entity> {
+		var all:Array<Entity> = new Array();
+		for (e in entities) {
+			if (Std.is(e, EntityContainer)) {
+				all = all.concat(cast(e, EntityContainer).children);
+				all.push( e );
+			}
+			else
+				all.push( e );
+		}
+		return all;
+	}
+
+	/**
+	  * Query [this] Engine using an ORegEx
+	  */
+	public function query(q : String):Array<Entity> {
+		return getAll().filter(function(e) return (new Object(e)).is(q));
+	}
+
+	/**
 	  * Method called for each 'tick' of [clock]
 	  */
 	private function clockTick(d : Int):Void {
-		date.minutes += 1;
+		date.minutes += 60;
 
 		for (child in entities) {
-			child.tick( date );
+			child._tick( date );
 		}
 
 		tick.call( date );
@@ -85,6 +112,7 @@ class Engine extends EventDispatcher {
 	private var clock : Clock;
 	private var entities : Array<Entity>;
 
+	public var player : Player;
 	public var date : GameDate;
 	public var launch : Signal<Engine>;
 	public var shutdown : Signal<Engine>;
@@ -93,6 +121,4 @@ class Engine extends EventDispatcher {
 /* === Static Fields === */
 
 	public static var instance : Null<Engine> = null;
-
-	public static var SECOND:Int = 500;
 }
