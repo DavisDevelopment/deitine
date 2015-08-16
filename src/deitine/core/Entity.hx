@@ -1,8 +1,10 @@
 package deitine.core;
 
 import tannus.io.Ptr;
+import tannus.io.Getter;
 import tannus.io.Signal;
 import tannus.io.EventDispatcher;
+import tannus.nore.Selector in Sel;
 
 import deitine.time.GameDate;
 import deitine.core.Engine;
@@ -16,10 +18,25 @@ class Entity extends EventDispatcher {
 /* === Instance Methods === */
 
 	/**
-	  * Method fired every time the Engine 'update's
+	  * Method fired by Engine every in-game minute
 	  */
-	public function tick(date : GameDate):Void {
-		null;
+	@:allow(deitine.core.Engine)
+	private function _tick(date : GameDate):Void {
+		day( date );
+	}
+	
+	/**
+	  * Method fired every in-game day
+	  */
+	public function day(date : GameDate):Void {
+		trace('Another day ends..');
+	}
+
+	/**
+	  * Determine whether [this] Entity matches the given ORegEx
+	  */
+	public function is(sel : String):Bool {
+		return (new Sel(sel)).test( this );
 	}
 
 /* === Computed Instance Fields === */
