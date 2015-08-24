@@ -75,7 +75,7 @@ abstract GameDate (Ptr<Int>) {
 	  */
 	public var hours(get, never):Int;
 	private inline function get_hours():Int {
-		return floor((self / HOUR) % M_DAY);
+		return floor((minutes / 60) % 24);
 	}
 	private inline function set_hours(v : Int):Int {
 		self -= floor(hours * HOUR);
