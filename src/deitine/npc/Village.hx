@@ -6,6 +6,7 @@ import tannus.io.EventDispatcher;
 import tannus.ds.Maybe;
 
 import deitine.ds.Action;
+import deitine.ds.Income;
 import deitine.core.Entity;
 import deitine.core.EntityContainer;
 import deitine.time.GameDate;
@@ -20,8 +21,6 @@ class Village extends EntityContainer {
 		super();
 
 		villagers = new Array();
-		_pop = state.field('population');
-		_pop.set( p );
 
 		for (i in 0...p) {
 			addVillager(Human.create());
@@ -34,10 +33,14 @@ class Village extends EntityContainer {
 	  * Occurs every 'day' (in game time)
 	  */
 	override public function day(d : GameDate):Void {
-		trace('Day has passed');
+		super.day(d);
+		
 		for (v in villagers) {
 			v.day( d );
 		}
+
+		var income = calculateIncome();
+		engine.player.acceptIncome( income );
 	}
 
 	/**
@@ -47,19 +50,27 @@ class Village extends EntityContainer {
 		villagers.push( h );
 	}
 
+	/**
+	  * Get the overall income of the Village
+	  */
+	public function calculateIncome():Income {
+		var inc:Income = new Income();
+
+		for (v in villagers)
+			inc += v.income();
+
+		return inc;
+	}
+
 /* === Computed Instance Fields === */
 
 	/**
 	  * The population of [this] VIllage
 	  */
-	public var population(get, set) : Int;
-	private inline function get_population() return _pop.get();
-	private inline function set_population(v : Int) {
-		return _pop.set(v);
-	}
+	public var population(get, never) : Int;
+	private inline function get_population() return villagers.length;
 
 /* === Instance Fields === */
 
-	private var _pop : Ptr<Int>;
 	private var villagers : Array<Human>;
 }
