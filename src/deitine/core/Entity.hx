@@ -5,16 +5,22 @@ import tannus.io.Getter;
 import tannus.io.Signal;
 import tannus.io.EventDispatcher;
 import tannus.nore.Selector in Sel;
+import tannus.ds.Destructible;
 
 import deitine.time.GameDate;
 import deitine.core.Engine;
+import deitine.core.Component;
 import deitine.ds.State;
 
-class Entity extends EventDispatcher {
+class Entity extends EventDispatcher implements Destructible {
 	/* Constructor Function */
 	public function new():Void {
 		super();
 		state = new State();
+		components = new Array();
+
+		addSignal('day');
+		addSignal('update');
 	}
 
 /* === Instance Methods === */
@@ -23,7 +29,23 @@ class Entity extends EventDispatcher {
 	  * Method fired every in-game day
 	  */
 	public function day(date : GameDate):Void {
-		trace('Another day ends..');
+		dispatch('day', date);
+	}
+
+	/**
+	  * Update [this] Entity
+	  */
+	public function update():Void {
+		dispatch('update', null);
+	}
+
+	/**
+	  * Delete [this] Entity
+	  */
+	public function destroy():Void {
+		for (c in components) {
+			c.destroy();
+		}
 	}
 
 	/**
@@ -31,6 +53,14 @@ class Entity extends EventDispatcher {
 	  */
 	public function is(sel : String):Bool {
 		return (new Sel(sel)).test( this );
+	}
+
+	/**
+	  * Attach a Component to [this]
+	  */
+	public function attach(klass : Class<Component>):Void {
+		var comp:Component = Type.createInstance(klass, [this]);
+		components.push( comp );
 	}
 
 /* === Computed Instance Fields === */
@@ -45,4 +75,5 @@ class Entity extends EventDispatcher {
 
 	private var id : String;
 	private var state : State;
+	private var components : Array<Component>;
 }
