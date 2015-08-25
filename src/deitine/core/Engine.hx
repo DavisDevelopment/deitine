@@ -20,16 +20,16 @@ class Engine extends EventDispatcher {
 		super();
 
 		if (instance == null) {
-			clock = new Clock(10 * 1000);
+			clock = new Clock(8 * 1000);
 			date = new GameDate(0, 0, 0);
 			launch = new Signal();
 			shutdown = new Signal();
 			tick = new Signal();
 			entities = new Array();
 
-			player = new Player();
-
 			instance = this;
+			player = new Player();
+			attach( player );
 
 			__init();
 		}
