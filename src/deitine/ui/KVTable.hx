@@ -12,7 +12,7 @@ class KVTable extends Pane {
 	/* Constructor Function */
 	public function new():Void {
 		super();
-		rows = new Array();
+		rows = new Map();
 
 		styles.border('solid', '#000000', 2);
 		styles.padding( 5 );
@@ -25,7 +25,7 @@ class KVTable extends Pane {
 	  */
 	public function addRow(name:String, ?val:String):Row {
 		var row:Row = new Row(name, val);
-		rows.push( row );
+		rows[name] = row;
 		append( row );
 		return row;
 	}
@@ -34,25 +34,14 @@ class KVTable extends Pane {
 	  * Get a Row by name
 	  */
 	public function getRow(name : String):Null<Row> {
-		for (row in rows) {
-			if (row.name == name)
-				return row;
-		}
-		return null;
+		return rows[name];
 	}
 
 	/**
 	  * Delete a Row by name
 	  */
 	public function deleteRow(name : String):Bool {
-		var row:Null<Row> = getRow(name);
-		if (row == null) {
-			return false;
-		} else {
-			rows.remove( row );
-			row.destroy();
-			return true;
-		}
+		return rows.remove(name);
 	}
 
 	/**
@@ -70,8 +59,9 @@ class KVTable extends Pane {
 	  * Set the value of a Row, if it exists
 	  */
 	public function set(name:String, value:String):String {
-		var mrow:Maybe<Row> = getRow(name);
-		var row:Row = (mrow || addRow(name));
+		var row:Null<Row> = getRow(name);
+		if (row == null)
+			row = addRow(name);
 
 		return (row.value = value);
 	}
@@ -87,5 +77,5 @@ class KVTable extends Pane {
 
 /* === Instance Fields === */
 
-	public var rows : Array<Row>;
+	public var rows : Map<String, Row>;
 }
