@@ -8,23 +8,17 @@ import tannus.nore.Selector in Sel;
 
 import deitine.time.GameDate;
 import deitine.core.Engine;
+import deitine.ds.State;
 
 class Entity extends EventDispatcher {
 	/* Constructor Function */
 	public function new():Void {
 		super();
+		state = new State();
 	}
 
 /* === Instance Methods === */
 
-	/**
-	  * Method fired by Engine every in-game minute
-	  */
-	@:allow(deitine.core.Engine)
-	private function _tick(date : GameDate):Void {
-		day( date );
-	}
-	
 	/**
 	  * Method fired every in-game day
 	  */
@@ -50,4 +44,5 @@ class Entity extends EventDispatcher {
 /* === Instance Fields === */
 
 	private var id : String;
+	private var state : State;
 }
