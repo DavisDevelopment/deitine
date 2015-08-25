@@ -101,7 +101,7 @@ class Engine extends EventDispatcher {
 		date.minutes += 60;
 
 		for (child in entities) {
-			child._tick( date );
+			child.day( date );
 		}
 
 		tick.call( date );
