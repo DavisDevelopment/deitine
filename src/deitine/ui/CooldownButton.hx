@@ -66,8 +66,18 @@ class CooldownButton extends Button {
 
 /* === Computed Instance Fields === */
 
+	/**
+	  * Whether [this] CooldownButton is cooling down
+	  */
 	public var cooling(get, never):Bool;
 	private inline function get_cooling() return cooldown.running;
+
+	/**
+	  * The tooltip for [this] Button
+	  */
+	public var tooltip(get, set):String;
+	private inline function get_tooltip() return el['title'].value;
+	private inline function set_tooltip(v) return (el['title'] = v);
 
 /* === Instance Fields === */
 
