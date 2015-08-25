@@ -12,11 +12,6 @@ class Background {
 	public function new():Void {
 		trace('Deitine doing stuff');
 		onlaunch( launch );
-
-		var server = new chrome.messaging.BGServer();
-		server.connected.on(function( sock ) {
-			sock.send('cheeks', [1,2,3]);
-		});
 	}
 
 	/**
@@ -30,7 +25,7 @@ class Background {
 
 		createWin('pages/game.html', options, function( win ) {
 			trace( win );
-			var socket = new Socket(false);
+			var socket = new Socket();
 			socket.connectWindow(win.contentWindow, handleComms.bind(socket));
 		});
 	}
