@@ -7,6 +7,7 @@ import tannus.ds.Maybe;
 import deitine.core.Entity;
 import deitine.time.GameDate;
 import deitine.npc.HumanData;
+import deitine.ds.Income;
 
 class Human extends Entity {
 	/* Constructor Function */
@@ -22,7 +23,28 @@ class Human extends Entity {
 	  * Method to be invoked daily
 	  */
 	override public function day(d : GameDate):Void {
-		trace('Villager has lived for a day');
+		super.day(d);
+	}
+
+	/**
+	  * Get the 'Income' of [this] Human
+	  */
+	public function income():Income {
+		var i = new Income();
+
+		i.addFaith( faith );
+
+		return i;
+	}
+
+/* === Computed Instance Fields === */
+
+	/**
+	  * Get the faith-output of [this] Human
+	  */
+	public var faith(get, never):Int;
+	private inline function get_faith():Int {
+		return base_faith;
 	}
 
 /* === Instance Fields === */
