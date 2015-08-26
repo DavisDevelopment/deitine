@@ -5,6 +5,7 @@ import tannus.ds.Object;
 
 import foundation.Pane;
 import foundation.Span;
+import foundation.Heading;
 
 import deitine.ui.KVRow in Row;
 
@@ -13,9 +14,24 @@ class KVTable extends Pane {
 	public function new():Void {
 		super();
 		rows = new Map();
+		heading = new Span('Title');
+		var s = heading.el.style;
+		s += {
+			'display': 'block',
+			'margin-left': 'auto',
+			'margin-right': 'auto',
+			'position': 'relative',
+			'top': '-8px',
+			'z-index': '10',
+			'font-size': '15px',
+			'width': 'auto'
+		};
+		heading.textAlign = Center;
+		append( heading );
 
 		styles.border('solid', '#000000', 2);
 		styles.padding( 5 );
+		styles.marginTop = 25;
 	}
 
 /* === Instance Methods === */
@@ -78,4 +94,5 @@ class KVTable extends Pane {
 /* === Instance Fields === */
 
 	public var rows : Map<String, Row>;
+	public var heading : Span;
 }
