@@ -24,6 +24,8 @@ class Engine extends EventDispatcher {
 			date = new GameDate(0, 0, 0);
 			launch = new Signal();
 			shutdown = new Signal();
+			onsave = new Signal();
+			onload = new Signal();
 			tick = new Signal();
 			entities = new Array();
 
@@ -60,7 +62,55 @@ class Engine extends EventDispatcher {
 	public function stop():Void {
 		clock.stop();
 
+		for (e in entities) {
+			e.destroy();
+		}
+
 		shutdown.call( this );
+	}
+
+	/**
+	  * Save [this] Game
+	  */
+	public function save():Void {
+		var state:Object = {
+			'saved_at': (Std.int(Date.now().getTime()))
+		};
+		onsave.call( state );
+		var data:SaveData = new SaveData('deitine', state);
+		data.save(function() {
+			trace('Game Saved!');
+		});
+	}
+
+	/**
+	  * Load [this] Game
+	  */
+	public function load(done : Void->Void):Void {
+		var sd = new SaveData('deitine');
+		sd.load(function(data) {
+			onload.call( data );
+			if (data != null)
+				makeupdays(data['saved_at']);
+			done();
+		});
+	}
+
+	/**
+	  * Catch up the days
+	  */
+	public function makeupdays(ms : Int):Void {
+		var now:Int = Std.int(Date.now().getTime());
+		var dif:Int = (now - ms);
+		trace( dif );
+		var days:Int = Math.round(Math.abs(dif / 8000));
+		trace('$days have passed since you last visited us');
+
+		for (i in 0...days) {
+			for (e in entities) {
+				e.day( date );
+			}
+		}
 	}
 
 	/**
@@ -105,6 +155,7 @@ class Engine extends EventDispatcher {
 		}
 
 		tick.call( date );
+		save();
 	}
 
 /* === Instance Fields === */
@@ -117,6 +168,8 @@ class Engine extends EventDispatcher {
 	public var launch : Signal<Engine>;
 	public var shutdown : Signal<Engine>;
 	public var tick : Signal<GameDate>;
+	public var onsave : Signal<Object>;
+	public var onload : Signal<Object>;
 
 /* === Static Fields === */
 
