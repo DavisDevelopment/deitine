@@ -14,9 +14,6 @@ class Inventory extends Component {
 		table = new KVTable();
 		table.appendTo('body');
 		table.activate();
-
-		table.addRow('followers');
-		table.addRow('faith');
 	}
 
 /* === Instance Methods === */
