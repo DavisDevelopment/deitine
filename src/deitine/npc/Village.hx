@@ -4,13 +4,15 @@ import tannus.io.Ptr;
 import tannus.io.Signal;
 import tannus.io.EventDispatcher;
 import tannus.ds.Maybe;
+import tannus.ds.Object;
 
 import deitine.ds.Action;
-import deitine.ds.Income;
+import deitine.ds.Inventory;
 import deitine.core.Entity;
 import deitine.core.EntityContainer;
 import deitine.time.GameDate;
 import deitine.npc.Human;
+import deitine.npc.Profession;
 
 using StringTools;
 using Lambda;
@@ -25,6 +27,9 @@ class Village extends EntityContainer {
 		for (i in 0...p) {
 			addVillager(Human.create());
 		}
+
+		engine.onsave.on( save );
+		engine.onload.on( load );
 	}
 
 /* === Instance Methods === */
@@ -39,8 +44,12 @@ class Village extends EntityContainer {
 			v.day( d );
 		}
 
-		var income = calculateIncome();
-		engine.player.acceptIncome( income );
+		var income = new Inventory({});
+		engine.player.inv.append( income );
+
+		calculateIncome( income );
+
+		engine.player.acceptInventory( income );
 	}
 
 	/**
@@ -51,15 +60,49 @@ class Village extends EntityContainer {
 	}
 
 	/**
+	  * Remove a Villager from [this] Village
+	  */
+	public inline function removeVillager(h : Human):Void {
+		villagers.remove( h );
+	}
+
+	/**
 	  * Get the overall income of the Village
 	  */
-	public function calculateIncome():Income {
-		var inc:Income = new Income();
-
+	public function calculateIncome(inc : Inventory):Inventory {
 		for (v in villagers)
-			inc += v.income();
+			v.income( inc );
 
 		return inc;
+	}
+
+	/**
+	  * Save [this] Village
+	  */
+	public function save(data : Object):Void {
+		data['village'] = villagers.map(function(v) return v.data());
+	}
+
+	/**
+	  * Load [this] Village
+	  */
+	public function load(data : Object):Void {
+		if (data == null)
+			return ;
+		var datas:Array<HumanData> = cast data['village'];
+		villagers = datas.map(function(d) {
+			return new Human( d );
+		});
+		trace('Village Loaded!');
+	}
+
+	/**
+	  * Get Villagers by Profession
+	  */
+	public function getByProfession(p : Profession):Array<Human> {
+		return villagers.filter(function(v) {
+			return (v.profession == p);
+		});
 	}
 
 /* === Computed Instance Fields === */
