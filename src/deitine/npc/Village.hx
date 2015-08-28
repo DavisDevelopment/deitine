@@ -69,9 +69,9 @@ class Village extends EntityContainer {
 	/**
 	  * Get the overall income of the Village
 	  */
-	public function calculateIncome(inc : Inventory):Inventory {
+	public function calculateIncome(inc:Inventory, days:Int=1):Inventory {
 		for (v in villagers)
-			v.income( inc );
+			v.income(inc, days);
 
 		return inc;
 	}
