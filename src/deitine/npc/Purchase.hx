@@ -1,5 +1,7 @@
 package deitine.npc;
 
+import tannus.io.Ptr;
+
 import deitine.npc.Human;
 import deitine.npc.Village;
 import deitine.ds.Action;
@@ -11,7 +13,8 @@ class Purchase extends Action {
 		super();
 
 		price = 0;
-		name = 'A Purchase';
+		var _n:String = 'A Purchase';
+		nam = Ptr.create(_n);
 		description = 'Some generic purhcase';
 		throttle = 1200;
 	}
@@ -24,15 +27,6 @@ class Purchase extends Action {
 		if (doable()) {
 			this.run();
 		}
-	}
-
-	/**
-	  * Perform [this] Action
-	  */
-	override public function action(done : Void->Void):Void {
-		village.addVillager(Human.create());
-		player.faith -= price;
-		done();
 	}
 
 	/**
@@ -61,10 +55,17 @@ class Purchase extends Action {
 		return (_price = v);
 	}
 
+	/**
+	  * The name of [this] Purchase
+	  */
+	public var name(get, set):String;
+	private inline function get_name():String return nam.get();
+	private inline function set_name(v) return nam.set( v );
+
 /* === Instance Fields === */
 
 	private var _price : Int;
-	public var name : String;
+	private var nam : Ptr<String>;
 	public var description : String;
 	public var throttle : Int;
 }
