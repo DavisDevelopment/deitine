@@ -3,12 +3,14 @@ package deitine.ui;
 import deitine.npc.Purchase;
 import deitine.ui.CooldownButton;
 
+@:access(deitine.npc.Purchase)
 class PurchaseButton extends CooldownButton {
 	/* Constructor Function */
 	public function new(kl : Class<Purchase>):Void {
 		super('?', 1000);
 
 		purchase = Type.createInstance(kl, []);
+		purchase.nam.attach( this.text );
 		originalDescription = purchase.description;
 		cooldown.duration = purchase.throttle;
 		text = purchase.name;
@@ -18,6 +20,10 @@ class PurchaseButton extends CooldownButton {
 		on('mouseleave', function(x) update());
 
 		on('click', buy);
+
+		on('activate', function(x) {
+			update();
+		});
 	}
 
 /* === Instance Methods === */
@@ -27,6 +33,8 @@ class PurchaseButton extends CooldownButton {
 	  */
 	private function update():Void {
 		purchase.description = (purchase.doable()?originalDescription:'Not enough faith!');
+		tooltip = purchase.description;
+		text = purchase.name;
 		purchase.player.update();
 	}
 
