@@ -21,6 +21,8 @@ class Player extends Entity {
 				return ;
 			inv = data['player'];
 		});
+
+		instance = this;
 	}
 
 /* === Instance Methods === */
@@ -82,14 +84,6 @@ class Player extends Entity {
 			'followers': followers,
 		};
 
-		/* add the number of each Profession to the Table */
-		var jobs = Profession.all();
-		var pnames = jobs.map(function(p) return p.toString().toLowerCase());
-		for (i in 0...jobs.length) {
-			var name = pnames[i];
-			var job = jobs[i];
-			base[name] = village.getByProfession(job).length;
-		}
 		base += inv.toObject();
 		return base;
 	}
@@ -97,4 +91,8 @@ class Player extends Entity {
 /* === Instance Fields === */
 
 	public var inv : Inventory;
+
+/* === Static Fields === */
+
+	public static var instance : Player;
 }
