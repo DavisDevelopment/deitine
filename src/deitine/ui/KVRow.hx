@@ -17,9 +17,11 @@ class KVRow extends Pane {
 		evalue = new Pane();
 		evalue.text = (v || '?');
 		evalue.styles.float( Right );
+		evalue.el['title'] = 'Tooltip';
 
 		clear = new Pane();
 		clear.el.css('clear', 'both');
+		clear.el.css('border-bottom', 'solid black 1px');
 
 		append(ename);
 		append(evalue);
