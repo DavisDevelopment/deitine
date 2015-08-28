@@ -102,14 +102,15 @@ class Engine extends EventDispatcher {
 	public function makeupdays(ms : Int):Void {
 		var now:Int = Std.int(Date.now().getTime());
 		var dif:Int = (now - ms);
-		trace( dif );
 		var days:Int = Math.round(Math.abs(dif / 8000));
 		trace('$days have passed since you last visited us');
 
-		for (i in 0...days) {
-			for (e in entities) {
-				e.day( date );
-			}
+
+		try {
+			player.village.calculateIncome(player.inv, days);
+		}
+		catch (err : Dynamic) {
+			trace( err );
 		}
 	}
 
