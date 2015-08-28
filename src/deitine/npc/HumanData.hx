@@ -5,4 +5,6 @@ typedef HumanData = {
 	var profession : Int;
 	var current_age : Int;
 	var max_age : Int;
+	var level : Int;
+	var experience : Int;
 };

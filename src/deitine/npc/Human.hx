@@ -3,6 +3,7 @@ package deitine.npc;
 import tannus.io.Ptr;
 import tannus.io.Signal;
 import tannus.ds.Maybe;
+import tannus.math.Percent;
 
 import deitine.core.Entity;
 import deitine.time.GameDate;
@@ -27,6 +28,12 @@ class Human extends Entity {
 		current_age = state.field('current_age');
 		current_age &= data.current_age;
 
+		lvl = state.field('lvl');
+		lvl &= data.level;
+
+		exp = state.field('xp');
+		exp &= data.experience;
+
 		max_age = data.max_age;
 	}
 
@@ -45,10 +52,10 @@ class Human extends Entity {
 	/**
 	  * Get the 'Income' of [this] Human
 	  */
-	public function income(inc : Inventory):Inventory {
+	public function income(inc:Inventory, days:Int=1):Inventory {
 		var job:Job = profession.getConstructor()(this);
-		job.perform( inc );
-		inc.contribute(Faith, faith);
+		job.perform(inc, days);
+		inc.contribute(Faith, (faith * days));
 		return inc;
 	}
 
@@ -67,7 +74,9 @@ class Human extends Entity {
 			'base_faith': base_faith,
 			'profession': profession,
 			'max_age': max_age,
-			'current_age': current_age
+			'current_age': current_age,
+			'level': level,
+			'experience': 0
 		};
 	}
 
@@ -78,14 +87,29 @@ class Human extends Entity {
 		engine.player.village.removeVillager( this );
 	}
 
+	/**
+	  * [this] Human has reached the next level
+	  */
+	public function levelUp():Void {
+		dispatch('level-up', level);
+		lvl.value += 1;
+
+		trace('A $profession has leveled up to level $level!');
+	}
+
 /* === Computed Instance Fields === */
 
 	/**
 	  * Get the faith-output of [this] Human
 	  */
 	public var faith(get, never):Int;
-	private inline function get_faith():Int {
-		return base_faith.get();
+	private function get_faith():Int {
+		var priests = engine.player.village.getByProfession(Priest);
+		var base:Int = base_faith.get();
+		for (p in priests) {
+			base += p.level;
+		}
+		return base;
 	}
 
 	/**
@@ -102,12 +126,49 @@ class Human extends Entity {
 	private inline function get_age() return current_age.get();
 	private inline function set_age(v : Int) return current_age.set( v );
 
+	/**
+	  * The level of [this] Human
+	  */
+	public var level(get, never):Int;
+	private inline function get_level() return lvl.get();
+
+	/**
+	  * The number of xp (experience points) [this] Human has
+	  */
+	public var xp(get, set) : Int;
+	private function get_xp():Int {
+		return exp;
+	}
+	private function set_xp(v : Int):Int {
+		var max_xp:Int = (200 * level);
+
+		if (v >= max_xp) {
+			v -= max_xp;
+			levelUp();
+		}
+		return (exp &= v);
+	}
+
+	/**
+	  * Get the xp gained by doing one's Job
+	  */
+	public var job_xp(get, never) : Int;
+	private function get_job_xp():Int {
+		return 10;
+	}
+
 /* === Instance Fields === */
 
 	private var base_faith : Ptr<Int>;
 	private var current_age : Ptr<Int>;
+	private var lvl : Ptr<Int>;
+	private var exp : Ptr<Int>;
 	private var max_age : Int;
 	private var _prof : Ptr<Profession>;
+
+/* ==== Static Fields === */
+
+	
 
 /* === Static Methods === */
 
@@ -121,8 +182,12 @@ class Human extends Entity {
 			'base_faith': r.randint(1, 3),
 			'profession': Profession.random(),
 			'current_age': 0,
-			'max_age': ([75, 105].randint() * 365)
+			'max_age': ([75, 105].randint() * 365),
+			'level': 1,
+			'experience': 0
 		};
+		while (data.profession == Profession.Priest)
+			data.profession = Profession.random();
 		return new Human( data );
 	}
 }
