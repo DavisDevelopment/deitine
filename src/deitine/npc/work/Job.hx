@@ -15,8 +15,8 @@ class Job {
 	/**
 	  * Perform [this] Job
 	  */
-	public function perform(inv : Inventory):Void {
-		trace('A ${human.profession} is doing his job');
+	public function perform(inv:Inventory, days:Int):Void {
+		null;
 	}
 
 /* === Instance Fields === */

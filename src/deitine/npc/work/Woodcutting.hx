@@ -10,7 +10,15 @@ class Woodcutting extends Job {
 	/**
 	  * Perform [this] Job
 	  */
-	override public function perform(i : Inventory):Void {
-		i.contribute(Wood, 2);
+	override public function perform(i:Inventory, days:Int):Void {
+		/* Lumberjack collects 2 Wood for each day */
+		i.contribute(Wood, (2 * human.level) * days);
+	
+		/* This tires him, so he must eat */
+		var eaten:Bool = i.consume(Meat, days);
+
+		human.xp += human.job_xp;
 	}
+
+	private var days_wo_food:Int = 0;
 }
