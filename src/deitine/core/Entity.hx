@@ -58,9 +58,20 @@ class Entity extends EventDispatcher implements Destructible {
 	/**
 	  * Attach a Component to [this]
 	  */
-	public function attach(klass : Class<Component>):Void {
-		var comp:Component = Type.createInstance(klass, [this]);
-		components.push( comp );
+	public function attach<T:Component>(klass : Class<T>):T {
+		var comp:T = Type.createInstance(klass, [this]);
+		components.push(cast comp);
+		return comp;
+	}
+
+	/**
+	  * Detach a Component from [this]
+	  */
+	public function detach(comp : Component):Bool {
+		var had:Bool = components.remove(comp);
+		if (had)
+			comp.destroy();
+		return had;
 	}
 
 /* === Computed Instance Fields === */
