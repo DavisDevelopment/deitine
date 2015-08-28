@@ -37,8 +37,18 @@ class CooldownButton extends Button {
 		on('cooldownstart', untyped set_disabled.bind(true));
 		on('cooldownend', untyped set_disabled.bind(false));
 
-		cooldown.complete.on(function(x) dispatch('cooldownend', null));
+		/* When the Cooldown Ends */
+		cooldown.complete.on(function(x) {
+			/* Dispatch the "cooldownend" event */
+			dispatch('cooldownend', null);
+
+			/* Set the Progress to 0 */
+			setProgress( 0 );
+		});
+
+		/* For Each Step in The Cooldown */
 		cooldown.step.on(function(s) {
+			/* Set the Progress to The Complement of the Cooldown's Progress */
 			setProgress(new Percent(100 - s.progress.value));
 		});
 	}
