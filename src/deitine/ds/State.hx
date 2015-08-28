@@ -3,6 +3,9 @@ package deitine.ds;
 import tannus.io.Ptr;
 import tannus.io.Signal2;
 import tannus.ds.tuples.Tup2;
+import tannus.ds.Object;
+
+using Lambda;
 
 class State {
 	/* Constructor Function */
@@ -79,6 +82,19 @@ class State {
 	  */
 	public function field<T>(name : String):Ptr<T> {
 		return new Ptr(get.bind(name), set.bind(name));
+	}
+
+	/**
+	  * Extract some data from [this] State as an Object
+	  */
+	public function extract(?keys:Array<String>):Object {
+		if (keys == null)
+			keys = [for (k in data.keys()) k];
+		var o:Object = {};
+		for (k in keys) {
+			o[k] = data[k];
+		}
+		return o;
 	}
 
 	/**
