@@ -4,6 +4,7 @@ import tannus.io.Ptr;
 import tannus.io.Signal;
 import tannus.ds.Maybe;
 import tannus.math.Percent;
+import tannus.math.Random;
 
 import deitine.core.Entity;
 import deitine.time.GameDate;
@@ -11,6 +12,7 @@ import deitine.npc.HumanData;
 import deitine.ds.Inventory;
 import deitine.npc.Profession;
 import deitine.npc.work.Job;
+import deitine.npc.HumanStats in Stats;
 
 using tannus.math.RandomTools;
 
@@ -18,6 +20,9 @@ class Human extends Entity {
 	/* Constructor Function */
 	public function new(data : HumanData):Void {
 		super();
+
+		stats = data.stats;
+		trace( stats );
 
 		base_faith = state.field('base_faith');
 		base_faith &= data.base_faith;
@@ -35,6 +40,9 @@ class Human extends Entity {
 		exp &= data.experience;
 
 		max_age = data.max_age;
+
+		/* == Breeding == */
+		since_last_breed = 0;
 	}
 
 /* === Instance Methods === */
@@ -47,6 +55,23 @@ class Human extends Entity {
 		if (age >= max_age) {
 			die();
 		}
+
+		/* Breeding System */
+		if (breedable) {
+			if (since_last_breed == 30) {
+				/* A 1 in 10 chance to become pregnant */
+				var preggers:Bool = ([0, 10].randint() == 1);
+
+				if (preggers) {
+					var vill:deitine.npc.Village = cast engine.query('deitine.npc.Village')[0];
+					var child:Human = create();
+					child.profession = profession;
+					vill.addVillager( child );
+				}
+			}
+			else 
+				since_last_breed++;
+		}
 	}
 
 	/**
@@ -56,6 +81,13 @@ class Human extends Entity {
 		var job:Job = profession.getConstructor()(this);
 		job.perform(inc, days);
 		inc.contribute(Faith, (faith * days));
+		
+		/* Whether [this] Human has enough wood to warm themselves */
+		var warm:Bool = inc.consume(Wood, 2);
+		if (!warm) {
+			
+		}
+
 		return inc;
 	}
 
@@ -76,7 +108,8 @@ class Human extends Entity {
 			'max_age': max_age,
 			'current_age': current_age,
 			'level': level,
-			'experience': 0
+			'experience': 0,
+			'stats': stats
 		};
 	}
 
@@ -166,9 +199,15 @@ class Human extends Entity {
 	private var max_age : Int;
 	private var _prof : Ptr<Profession>;
 
+	/* == Perk-Specific Fields == */
+	private var since_last_breed : Int;
+
+	public var stats : Stats;
+
 /* ==== Static Fields === */
 
-	
+	/* Whether Humans can Breed on their own */
+	public static var breedable:Bool = false;
 
 /* === Static Methods === */
 
@@ -184,10 +223,15 @@ class Human extends Entity {
 			'current_age': 0,
 			'max_age': ([75, 105].randint() * 365),
 			'level': 1,
-			'experience': 0
+			'experience': 0,
+			'stats' : new Stats()
 		};
-		while (data.profession == Profession.Priest)
+
+		/* Ensure that the randomly selected Profession is a valid choice */
+		while (data.profession == Profession.Priest) {
 			data.profession = Profession.random();
+		}
+
 		return new Human( data );
 	}
 }
