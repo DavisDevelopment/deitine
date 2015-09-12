@@ -85,7 +85,7 @@ class Human extends Entity {
 		/* Whether [this] Human has enough wood to warm themselves */
 		var warm:Bool = inc.consume(Wood, 2);
 		if (!warm) {
-			
+			stats.happiness -= 2;
 		}
 
 		return inc;
