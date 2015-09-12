@@ -1,5 +1,7 @@
 package deitine.npc;
 
+import deitine.npc.HumanStats;
+
 typedef HumanData = {
 	var base_faith : Int;
 	var profession : Int;
@@ -7,4 +9,5 @@ typedef HumanData = {
 	var max_age : Int;
 	var level : Int;
 	var experience : Int;
+	var stats : HumanStats;
 };
