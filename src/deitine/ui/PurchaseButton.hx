@@ -34,7 +34,6 @@ class PurchaseButton extends CooldownButton {
 	private function update():Void {
 		purchase.description = (purchase.doable()?originalDescription:'Not enough faith!');
 		tooltip = purchase.description;
-		text = purchase.name;
 		purchase.player.update();
 	}
 
