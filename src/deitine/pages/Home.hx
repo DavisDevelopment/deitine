@@ -3,7 +3,11 @@ package deitine.pages;
 import deitine.ui.*;
 import foundation.*;
 
+import deitine.ds.Perk;
 import deitine.npc.tasks.*;
+
+import deitine.ds.Perk;
+import deitine.ds.perks.*;
 
 class Home extends Page {
 	/* Constructor Function */
@@ -50,29 +54,44 @@ class Home extends Page {
 		group.vertical = true;
 		left.append( group );
 
-		/* Create the 'Create Follower' Button */
-		var newVillager = new PurchaseButton(CreateFollower);
-		newVillager.tiny = true;
-		group.addButton( newVillager );
-
-		/* Create the 'Create Priest' Button */
-		var newPriest = new PurchaseButton(CreatePriest);
-		newPriest.tiny = true;
-		group.addButton( newPriest );
-
 		/*
-		var newGame = new CooldownButton('New Game', 1);
-		newGame.tooltip = 'Start a Fresh Game';
-		newGame.tiny = true;
-		group.addButton( newGame );
-		newGame.on('click', function(e) {
-			tannus.chrome.Storage.local.clear(function() {
-				untyped {
-					chrome.runtime.reload();
-				};
-			});
-		});
-		*/
+		   if the Player has the Breeding Perk, give them Buttons for each Profession
+		 */
+		if (player.hasPerk('breeding')) {
+			/* Create the 'Create Villager' Button */
+			var newVillager = new PurchaseButton(CreateFollower);
+			newVillager.tiny = true;
+			group.addButton( newVillager );
+
+			/* Create the 'Create Lumberjack' Button */
+			var newJack = new PurchaseButton(CreateWoodcutter);
+			newJack.tiny = true;
+			group.addButton( newJack );
+
+			/* Create the 'Create Hunter' Button */
+			var newHunter = new PurchaseButton(CreateHunter);
+			newHunter.tiny = true;
+			group.addButton( newHunter );
+
+			/* Create the 'Create Priest' Button */
+			var newPriest = new PurchaseButton(CreatePriest);
+			newPriest.tiny = true;
+			group.addButton( newPriest );
+
+		}
+
+		/* Otherwise, just Button for a Villager and a Priest will be given */
+		else {
+			/* Create the 'Create Follower' Button */
+			var newVillager = new PurchaseButton(CreateFollower);
+			newVillager.tiny = true;
+			group.addButton( newVillager );
+
+			/* Create the 'Create Priest' Button */
+			var newPriest = new PurchaseButton(CreatePriest);
+			newPriest.tiny = true;
+			group.addButton( newPriest );
+		}
 	}
 
 /* === Instance Fields === */
