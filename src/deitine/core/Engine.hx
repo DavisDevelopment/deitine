@@ -151,9 +151,12 @@ class Engine extends EventDispatcher {
 	private function clockTick(d : Int):Void {
 		date.minutes += 60;
 
+		var now = (Date.now().getTime());
 		for (child in entities) {
 			child.day( date );
 		}
+		var took = ((Date.now().getTime()) - now);
+		trace('In-Game Day took $took milliseconds to process');
 
 		tick.call( date );
 		save();
