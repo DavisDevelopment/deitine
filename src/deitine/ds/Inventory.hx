@@ -25,8 +25,13 @@ abstract Inventory (Inv) from Inv {
 	  * Add [count] amount of [res] Resource to [this] Income
 	  */
 	public function contribute(res:Resource, count:Int):Void {
-		var field = resourceField(res);
-		field.value += count;
+		if ( false ) {
+			this.parent.contribute(res, count);
+		}
+		else {
+			var field = resourceField(res);
+			field.value += count;
+		}
 	}
 
 	/**
@@ -103,6 +108,28 @@ abstract Inventory (Inv) from Inv {
 				throw new js.Error('No field for deitine.ds.Income associated with $r!');
 		}
 	}
+
+	/**
+	  * Get the name of the field associated with the given Resource
+	  */
+	private function resourceName(r : Resource):String {
+		return switch (r) {
+			case Faith: 'faith';
+			case Wood: 'wood';
+			case Meat: 'meat';
+			case Leather: 'leather';
+			default:
+				throw new js.Error('No field for deitine.ds.Income associated with $r!');
+		}
+	}
+
+/* === Instance Fields === */
+
+	/**
+	  * a reference to [this] as an Object
+	  */
+	private var obj(get, never):Object;
+	private inline function get_obj() return new Object(this);
 }
 
 private typedef Inv = {
