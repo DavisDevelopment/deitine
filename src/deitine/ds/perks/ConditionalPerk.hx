@@ -25,4 +25,28 @@ class ConditionalPerk extends Perk {
 	public static function met():Bool {
 		return false;
 	}
+
+	/* Array of all subclasses of [this] */
+	public static var all:Array<Class<ConditionalPerk>>;
+
+	/**
+	  * Get all ConditionalPerks that are unmet AND the Player doesn't have
+	  */
+	public static function getMet():Array<Class<ConditionalPerk>> {
+		var res = new Array();
+		for (c in all) {
+			var met:Bool = cast Reflect.callMethod(c, Reflect.getProperty(c, 'met'), []);
+			if (met && !Player.instance.hasPerk(c)) {
+				res.push( c );
+			}
+		}
+		return res;
+	}
+
+	/**
+	  * Initialize this class
+	  */
+	public static function __init__():Void {
+		all = new Array();
+	}
 }
