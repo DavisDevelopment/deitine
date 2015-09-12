@@ -33,5 +33,5 @@ class HumanStats {
 
 /* === Constants === */
 
-	private static inline var TIRED_THRESHOLD:Int = 10;
+	private static inline var TIRED_THRESHOLD:Int = 5;
 }
