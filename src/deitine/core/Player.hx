@@ -34,11 +34,22 @@ class Player extends Entity {
 		});
 
 		instance = this;
-
-		addPerk( Breeding );
+		trace(hasPerk(Breeding));
 	}
 
 /* === Instance Methods === */
+
+	/**
+	  * update [this] Player
+	  */
+	override public function update():Void {
+		super.update();
+
+		var perkList = ConditionalPerk.getMet();
+		for (p in perkList) {
+			addPerk(cast p);
+		}
+	}
 
 	/**
 	  * Assimilate some Income into [this]
