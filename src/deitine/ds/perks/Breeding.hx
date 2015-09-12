@@ -36,4 +36,8 @@ class Breeding extends ConditionalPerk {
 	public static function met():Bool {
 		return (Player.instance.village.population >= BREED_POP);
 	}
+
+	public static function __init__():Void {
+		ConditionalPerk.all.push( Breeding );
+	}
 }
