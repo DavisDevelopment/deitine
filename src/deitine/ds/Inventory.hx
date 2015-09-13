@@ -1,139 +1,131 @@
 package deitine.ds;
 
 import tannus.ds.Object;
+import tannus.ds.Obj;
 import tannus.io.Ptr;
 
 import deitine.ds.Resource;
+import deitine.ds.State;
 
 import haxe.macro.Expr;
+import haxe.macro.Context;
+
+#if macro
+using haxe.macro.ExprTools;
+#end
 
 @:forward
-abstract Inventory (Inv) from Inv {
+abstract Inventory (Invent) from Invent to Invent {
 	/* Constructor Function */
-	public inline function new(o : Object):Void {
-		this = {
+	public inline function new(o : Object) {
+		this = new Invent({
 			'faith' : (o['faith'] || 0),
 			'wood' : (o['wood'] || 0),
 			'meat' : (o['meat'] || 0),
 			'leather' : (o['leather'] || 0)
-		};
+		});
+	}
+}
+
+private class Invent {
+	public function new(i : Inv):Void {
+		inv = i;
+		oinv = inv;
 	}
 
 /* === Instance Methods === */
 
 	/**
-	  * Add [count] amount of [res] Resource to [this] Income
+	  * Add some Resource to [this] Inventory
 	  */
 	public function contribute(res:Resource, count:Int):Void {
-		if ( false ) {
-			this.parent.contribute(res, count);
-		}
-		else {
-			var field = resourceField(res);
-			field.value += count;
-		}
+		var key:String = resname(res);
+		oinv[key] += count;
 	}
 
 	/**
-	  * Use [count] amount of [res] Resource
+	  * Use some Resource
 	  */
 	public function consume(res:Resource, count:Int):Bool {
-		var field = resourceField(res);
-		if (field.value >= count) {
-			field.value -= count;
+		var key:String = resname( res );
+		if (oinv[key] >= count) {
+			oinv[key] -= count;
 			return true;
-		} else {
-			if (this.parent != null) {
-				return this.parent.consume(res, count);
-			} else return false;
 		}
+		return false;
 	}
 
 	/**
-	  * Append some other Inventory to [this] one
+	  * Copy [this] Inventory
 	  */
-	public inline function append(child : Inventory):Void {
-		child.parent = new Inventory(this);
+	public function clone():Inventory {
+		var copy = new Inventory({});
+		
+		copy.faith = faith;
+		copy.wood = wood;
+		copy.meat = meat;
+		copy.leather = leather;
+
+		return cast copy;
 	}
 
 	/**
-	  * Get the sum of [this] Inventory and another
+	  * Get the underlying Inv instance
 	  */
-	@:op(A + B)
-	public function plus(other : Inventory):Inventory {
-		var a:Object = new Object(this);
-		var b:Object = new Object(other);
-		var c:Object = new Object({});
-		for (k in a.keys) {
-		}
-		return new Inventory(c);
-	}
+	public function getInv():Inv return inv;
 
 	/**
-	  * Increment [this] Inventory by another
+	  * Get the field-name for the given Resource
 	  */
-	@:op(A += B)
-	public inline function increment(other : Inventory):Inventory {
-		this = cast (new Inventory(this) + other);
-		return cast this;
-	}
-
-	/**
-	  * Cast [this] to an Object
-	  */
-	public inline function toObject():Object {
-		return new Object(this).clone();
-	}
-
-/* === Instance Utility Methods === */
-
-	/**
-	  * Get a Pointer to the field associated with the given Resource
-	  */
-	private function resourceField(r : Resource):Ptr<Int> {
-		switch (r) {
+	private static function resname(r : Resource):String {
+		return (switch ( r ) {
 			case Faith:
-				return Ptr.create(this.faith);
-
+				'faith';
 			case Wood:
-				return Ptr.create(this.wood);
-
+				'wood';
 			case Meat:
-				return Ptr.create(this.meat);
-
+				'meat';
 			case Leather:
-				return Ptr.create(this.leather);
+				'leather';
 
 			default:
-				throw new js.Error('No field for deitine.ds.Income associated with $r!');
-		}
+				throw 'Newp';
+		});
 	}
 
 	/**
-	  * Get the name of the field associated with the given Resource
+	  * Cast to Object
 	  */
-	private function resourceName(r : Resource):String {
-		return switch (r) {
-			case Faith: 'faith';
-			case Wood: 'wood';
-			case Meat: 'meat';
-			case Leather: 'leather';
-			default:
-				throw new js.Error('No field for deitine.ds.Income associated with $r!');
-		}
+	public function toObject():Object {
+		return cast inv;
 	}
+
+/* === Computed Instance Fields === */
+
+	public var faith(get, set):Int;
+	private inline function get_faith() return inv.faith;
+	private inline function set_faith(v) return (inv.faith = v);
+
+	public var wood(get, set):Int;
+	private inline function get_wood() return inv.wood;
+	private inline function set_wood(v) return (inv.wood = v);
+	
+	public var meat(get, set):Int;
+	private inline function get_meat() return inv.meat;
+	private inline function set_meat(v) return (inv.meat = v);
+
+	public var leather(get, set):Int;
+	private inline function get_leather() return inv.leather;
+	private inline function set_leather(v) return (inv.leather = v);
 
 /* === Instance Fields === */
 
-	/**
-	  * a reference to [this] as an Object
-	  */
-	private var obj(get, never):Object;
-	private inline function get_obj() return new Object(this);
+	private var inv : Inv;
+	private var oinv : Obj;
 }
 
 private typedef Inv = {
-	@:optional var parent : Inventory;
+	@:optional var parent : Invent;
 	var faith : Int;
 	var wood : Int;
 	var meat : Int;
