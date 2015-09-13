@@ -12,13 +12,13 @@ class Woodcutting extends Job {
 	  */
 	override public function perform(i:Inventory, days:Int):Void {
 		/* Lumberjack collects 2 Wood for each day */
-		i.contribute(Wood, (2 * human.level) * days);
+		i.wood += ((2 * human.level) * days);
 	
 		/* This tires him, so he must eat */
 		var eaten:Bool = i.consume(Meat, days);
+		if (!eaten)
+			human.stats.happiness -= 2;
 
 		human.xp += human.job_xp;
 	}
-
-	private var days_wo_food:Int = 0;
 }
