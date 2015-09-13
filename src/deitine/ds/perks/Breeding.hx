@@ -21,7 +21,7 @@ class Breeding extends ConditionalPerk {
 	  * Called when [this] Perk takes effect
 	  */
 	override public function affect():Void {
-		deitine.npc.Human.breedable = true;
+		trace('Player has acquired the "Breeding" perk');
 	}
 
 /* === Static Fields === */
