@@ -6,6 +6,7 @@ import tannus.io.EventDispatcher;
 import tannus.ds.Promise;
 import tannus.ds.promises.*;
 import tannus.ds.Object;
+import tannus.internal.CompileTime in Ct;
 
 import deitine.time.Clock;
 import deitine.time.GameDate;
@@ -32,6 +33,8 @@ class Engine extends EventDispatcher {
 			instance = this;
 			player = new Player();
 			attach( player );
+
+			daysSinceLastPlayed = 0;
 
 			__init();
 		}
@@ -77,10 +80,13 @@ class Engine extends EventDispatcher {
 			'saved_at': (Std.int(Date.now().getTime()))
 		};
 		onsave.call( state );
-		var data:SaveData = new SaveData('deitine', state);
-		data.save(function() {
-			trace('Game Saved!');
+		var saveTime = Ct.time({
+			var data:SaveData = new SaveData('deitine', state);
+			data.save(function() {
+				trace('Game Saved!');
+			});
 		});
+		trace('Engine took ${saveTime}ms to save the game');
 	}
 
 	/**
@@ -103,15 +109,18 @@ class Engine extends EventDispatcher {
 		var now:Int = Std.int(Date.now().getTime());
 		var dif:Int = (now - ms);
 		var days:Int = Math.round(Math.abs(dif / 8000));
+		daysSinceLastPlayed = days;
 		trace('$days have passed since you last visited us');
 
 
+		/*
 		try {
 			player.village.calculateIncome(player.inv, days);
 		}
 		catch (err : Dynamic) {
 			trace( err );
 		}
+		*/
 	}
 
 	/**
@@ -151,12 +160,18 @@ class Engine extends EventDispatcher {
 	private function clockTick(d : Int):Void {
 		date.minutes += 60;
 
-		var now = (Date.now().getTime());
-		for (child in entities) {
-			child.day( date );
-		}
-		var took = ((Date.now().getTime()) - now);
-		trace('In-Game Day took $took milliseconds to process');
+		/* Invoke the 'day' method for every Entity */
+		var wholeTime = Ct.time({
+			for (child in entities) {
+				var etime = Ct.time(child.day( date ));
+				trace('${Type.getClassName(Type.getClass(child))} took ${etime}ms to compute one day');
+			}
+		});
+		trace('In-Game Day took $wholeTime milliseconds to process');
+
+		/* reset the daysSinceLastPlayed field */
+		if (daysSinceLastPlayed > 0)
+			daysSinceLastPlayed = 0;
 
 		tick.call( date );
 		save();
@@ -166,6 +181,9 @@ class Engine extends EventDispatcher {
 
 	private var clock : Clock;
 	private var entities : Array<Entity>;
+
+	/* internal meta-data fields */
+	public var daysSinceLastPlayed : Int;
 
 	public var player : Player;
 	public var date : GameDate;
