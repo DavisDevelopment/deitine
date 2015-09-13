@@ -27,6 +27,11 @@ class Background {
 			trace( win );
 			var socket = new Socket();
 			socket.connectWindow(win.contentWindow, handleComms.bind(socket));
+			var w:tannus.html.Win = win.contentWindow;
+			win.onClosed.addListener(function() {
+				trace('Window is closing..');
+				socket.send('event:close', null);
+			});
 		});
 	}
 
