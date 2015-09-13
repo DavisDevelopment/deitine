@@ -27,11 +27,7 @@ class Player extends Entity {
 
 		engine.onsave.on( save );
 
-		engine.onload.on(function(data) {
-			if (data == null) 
-				return ;
-			inv = data['player'];
-		});
+		engine.onload.on( load );
 
 		instance = this;
 		trace(hasPerk(Breeding));
@@ -55,7 +51,6 @@ class Player extends Entity {
 	  * Assimilate some Income into [this]
 	  */
 	public function acceptInventory(inc : Inventory):Void {
-		trace( inc );
 		inv.faith += inc.faith;
 		inv.wood += inc.wood;
 		inv.meat += inc.meat;
@@ -73,7 +68,28 @@ class Player extends Entity {
 	  * Save [this] Player
 	  */
 	public function save(data : Object):Void {
-		data['player'] = inv;
+		data['player'] = {
+			'inventory': inv.toObject(),
+			'perks': [for (p in perks) Type.getClassName(Type.getClass(p))]
+		};
+	}
+
+	/**
+	  * Load [this] Player
+	  */
+	public function load(data : Object):Void {
+		if (data == null)
+			return ;
+		/* Load the Player's Inventory */
+		data = data['player'];
+		inv = new Inventory(cast data['inventory']);
+
+		/* Load the Player's perks */
+		perks = new Array();
+		var savedPerks:Array<String> = cast data['perks'];
+		for (name in savedPerks) {
+			addPerk(cast Type.resolveClass( name ));
+		}
 	}
 
 	/**
