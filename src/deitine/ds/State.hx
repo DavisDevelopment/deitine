@@ -12,6 +12,7 @@ class State {
 	public function new():Void {
 		change = new Signal2();
 		data = new Map();
+		cache = new Map();
 	}
 
 /* === Instance Methods === */
@@ -41,11 +42,13 @@ class State {
 		if (has(name)) {
 			var v:Dynamic = data.get(name);
 			var _s:String = haxe.Json.stringify(v);
+			/*
 			defer({
 				var n:String = haxe.Json.stringify(v);
 				if (n != _s) 
 					change.call(name, ChangeField(haxe.Json.parse(_s), v));
 			});
+			*/
 			return (untyped v);
 		} else return null;
 	}
@@ -59,7 +62,8 @@ class State {
 			data.set(name, value);
 			change.call(name, ChangeField(old, value));
 			return get(name);
-		} else {
+		} 
+		else {
 			data.set(name, value);
 			change.call(name, CreateField( value ));
 			return get(name);
@@ -81,7 +85,15 @@ class State {
 	  * Obtain a Pointer to a field of [this] State
 	  */
 	public function field<T>(name : String):Ptr<T> {
-		return new Ptr(get.bind(name), set.bind(name));
+		var ref:Ptr<T>;
+		if (cache.exists(name)) {
+			ref = cache.get(name);
+		}
+		else {
+			ref = new Ptr(get.bind(name), set.bind(name));
+			cache.set(name, ref);
+		}
+		return ref;
 	}
 
 	/**
@@ -112,6 +124,7 @@ class State {
 
 	public var change : Signal2<String, Change<Dynamic>>;
 	private var data : Map<String, Dynamic>;
+	private var cache : Map<String, Ptr<Dynamic>>;
 }
 
 enum Change<T> {
