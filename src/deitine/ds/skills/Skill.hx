@@ -1,13 +1,20 @@
 package deitine.ds.skills;
 
 import tannus.ds.Value;
+import tannus.io.Struct;
 import tannus.math.Percent;
+
+import deitine.ds.skills.SkillType;
+
+import haxe.Serializer;
+import haxe.Unserializer;
 
 class Skill {
 	/* Constructor Function */
-	public function new(lvl:Int=1, xp:Int=0):Void {
-		level = lvl;
-		points = xp;
+	public function new(kind:SkillType, ?lvl:Int, ?xp:Int):Void {
+		type = kind;
+		level = (lvl!=null ? lvl : 15);
+		points = (xp!=null ? xp  : 0);
 	}
 
 /* === Instance Methods === */
@@ -16,7 +23,7 @@ class Skill {
 	  * Calculate how many points are needed to advance to the next level
 	  */
 	private function nextLevel():Int {
-		return (65 * level);
+		return Std.int(improve_mult() * Math.pow(level, 1.95) + improve_offset());
 	}
 
 	/**
@@ -40,8 +47,23 @@ class Skill {
 		level++;
 	}
 
+	/**
+	  * Get the improvement-multiplier for [this] Skill
+	  */
+	private inline function improve_mult():Float {
+		return (2);
+	}
+
+	/**
+	  * get the improvement-offset for [this] Skill
+	  */
+	private inline function improve_offset():Float {
+		return 0;
+	}
+
 /* === Computed Instance Fields === */
 
+	/* Progress towards the next level */
 	public var progress(get, never):Percent;
 	private function get_progress() {
 		return Percent.percent(points, nextLevel());
@@ -49,6 +71,12 @@ class Skill {
 
 /* === Instance Fields === */
 
+	/* The current level of [this] Skill */
 	public var level : Int;
+
+	/* The number of points toward the next level */
 	private var points : Int;
+
+	/* The type of Skill [this] is */
+	public var type : SkillType;
 }
