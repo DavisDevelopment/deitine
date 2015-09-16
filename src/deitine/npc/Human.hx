@@ -9,10 +9,13 @@ import tannus.math.Percent;
 import tannus.math.Random;
 
 import deitine.core.Entity;
+import deitine.core.Player.instance in player;
 import deitine.time.GameDate;
-import deitine.npc.HumanData;
 import deitine.ds.Inventory;
 import deitine.npc.Profession;
+import deitine.npc.HumanData;
+import deitine.npc.Names;
+import deitine.npc.Gender;
 import deitine.npc.work.Job;
 import deitine.npc.HumanStats in Stats;
 
@@ -22,6 +25,10 @@ class Human extends Entity {
 	/* Constructor Function */
 	public function new(data : HumanData):Void {
 		super();
+
+		id = data.id;
+		name = data.name;
+		gender = data.gender;
 
 		//- Create the Human's Stats
 		stats = data.stats;
@@ -57,6 +64,9 @@ class Human extends Entity {
 
 		/* == Initialization Methods == */
 		prepareValues();
+		addSignals([
+			'death'
+		]);
 	}
 
 /* === Instance Methods === */
@@ -73,20 +83,20 @@ class Human extends Entity {
 	  */
 	override public function day(d : GameDate):Void {
 		/* Increase human's age by one day */
-		/*
 		age += 1;
 		if (age >= max_age) {
 			die();
 		}
-		*/
 
 		/* Breeding System */
-		if (engine.player.hasPerk('breeding')) {
-			if (since_last_breed == 30) {
+		if (player.hasPerk('breeding') && gender == Male) {
+			if (since_last_breed >= 30) {
 				/* A 1 in 10 chance to become pregnant */
-				var preggers:Bool = ([0, 10].randint() == 1);
-
+				var preggers:Bool = Breeding.requestPreg();
+				
+				/* if Villager is now pregnant */
 				if (preggers) {
+					trace('Villager has bred!!');
 					var vill:deitine.npc.Village = cast engine.query('deitine.npc.Village')[0];
 					var child:Human = create();
 					child.profession = profession;
@@ -97,22 +107,23 @@ class Human extends Entity {
 				since_last_breed++;
 		}
 
-		/* Contribute daily income */
-		var inv:Inventory = engine.player.inv;
-		work(inv, engine.daysSinceLastPlayed);
-
-		/* == End of Day Stuff == */
-		sleep();
+		dispatch('day', this);
 	}
 
 	/**
 	  * Have [this] Human perform their Job
 	  */
 	public function work(inc:Inventory, days:Int=1):Inventory {
+		/* Human will only work if they aren't too tired to */
+		if (stats.exhaustion < 12) {
+			job.perform(inc, days);
+		}
 
-		job.perform(inc, days);
-		inc.faith += (faith * days);
+		inc.contribute(Faith, faith);
 		
+		eat();
+		sleep();
+
 		return inc;
 	}
 
@@ -120,7 +131,51 @@ class Human extends Entity {
 	  * Human goes to bed
 	  */
 	private function sleep():Void {
-		stats.exhaustion -= 2;
+		var warm:Bool = player.inv.materials.consume(Stick, 3);
+		
+		var canSleep:Bool = (warm);
+
+		if (canSleep) {
+			stats.exhaustion -= 2;
+		}
+		else {
+			stats.exhaustion += 2;
+		}
+	}
+
+	/**
+	  * Human eats food
+	  */
+	private function eat():Void {
+		var eaten:Bool = player.inv.consume(Meat, level);
+		if (eaten) {
+			stats.hunger -= level;
+		}
+		else {
+			stats.hunger += (level * 2);
+		}
+
+		if (stats.hunger >= (level * 6)) {
+			die();
+		}
+	}
+
+	/**
+	  * Grant [this] Human experience points
+	  */
+	public function giveXp(?amount : Int):Void {
+		if (amount == null)
+			amount = job_xp;
+		var nxp:Int = (state.get('xp') + amount);
+
+		var max_xp:Int = (25 * (level - 1) + 100);
+
+		if (nxp >= max_xp) {
+			nxp -= max_xp;
+			levelUp();
+		}
+		state.set('xp', nxp);
+
 	}
 
 	/**
@@ -128,12 +183,15 @@ class Human extends Entity {
 	  */
 	public function data():HumanData {
 		return {
+			'name': name,
+			'gender': gender,
+			'id': id,
 			'base_faith': state.get('faith'),
 			'profession': profession,
 			'max_age': max_age,
 			'current_age': current_age,
 			'level': level,
-			'experience': 0,
+			'experience': state.get('xp'),
 			'stats': stats
 		};
 	}
@@ -143,6 +201,7 @@ class Human extends Entity {
 	  */
 	public function die():Void {
 		engine.player.village.removeVillager( this );
+		dispatch('death', null);
 	}
 
 	/**
@@ -151,8 +210,6 @@ class Human extends Entity {
 	public function levelUp():Void {
 		dispatch('level-up', level);
 		lvl.value += 1;
-
-		trace('A $profession has leveled up to level $level!');
 	}
 
 /* === Computed Instance Fields === */
@@ -209,7 +266,7 @@ class Human extends Entity {
 	  */
 	public var job_xp(get, never) : Int;
 	private function get_job_xp():Int {
-		return 10;
+		return (job.xp);
 	}
 
 /* === Instance Fields === */
@@ -226,6 +283,8 @@ class Human extends Entity {
 	public var stats : Stats;
 	public var job : Job;
 	public var profession : Profession;
+	public var name : String;
+	public var gender : Gender;
 
 /* ==== Static Fields === */
 
@@ -236,12 +295,16 @@ class Human extends Entity {
 	  */
 	public static function create():Human {
 		var r = new tannus.math.Random();
+		var gend:Gender = r.randbool();
 
 		var data = {
+			'name': Names.generate(gend),
+			'gender': gend,
+			'id': Utils.randomString( 12 ),
 			'base_faith': r.randint(1, 3),
 			'profession': Profession.random(),
 			'current_age': 0,
-			'max_age': ([75, 105].randint() * 365),
+			'max_age': ([21, 50].randint() * DAYS_PER_YEAR),
 			'level': 1,
 			'experience': 0,
 			'stats' : new Stats()
@@ -254,4 +317,6 @@ class Human extends Entity {
 
 		return new Human( data );
 	}
+
+	private static inline var DAYS_PER_YEAR:Int = 4;
 }

@@ -2,9 +2,14 @@ package deitine.npc;
 
 import tannus.math.TMath in Nums;
 
+import deitine.ds.skills.*;
+
 class HumanStats {
 	/* Constructor Function */
 	public function new():Void {
+		strength = new Skill();
+
+		doubt = 0;
 		happiness = 0;
 		exhaustion = 0;
 	}
@@ -25,11 +30,20 @@ class HumanStats {
 
 /* === Instance Fields === */
 
+	/* How doubtful the Human is */
+	public var doubt : Int;
+
+	/* How Strong the Human is */
+	public var strength : Skill;
+
 	/* The 'happiness' attribute of a Human */
 	public var happiness : Int;
 
 	/* The exhaustion attribute of a Human */
 	public var exhaustion : Int;
+	
+	/* How hungry the Human is */
+	public var hunger : Int;
 
 /* === Constants === */
 
