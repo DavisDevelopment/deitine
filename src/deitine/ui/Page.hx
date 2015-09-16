@@ -7,6 +7,7 @@ import tannus.io.Ptr;
 import tannus.io.Signal;
 import tannus.io.EventDispatcher;
 
+import deitine.ds.State;
 import deitine.core.Player;
 import deitine.core.Engine;
 import deitine.npc.Village;
@@ -19,12 +20,17 @@ class Page extends EventDispatcher {
 		super();
 
 		content = new Pane();
+		cache = false;
 		styleContent();
 
 		addSignals([
 			'open',
+			'reopen',
 			'close'
 		]);
+
+		state = new State();
+		state.set('opened', false);
 	}
 
 /* === Instance Methods === */
@@ -40,14 +46,20 @@ class Page extends EventDispatcher {
 		content.appendTo('body');
 		content.activate();
 		active = this;
-		dispatch('open', null);
+		if (cache && state.get('opened')) {
+			dispatch('reopen', null);
+		}
+		else {
+			dispatch('open', null);
+		}
+		state.set('opened', true);
 	}
 
 	/**
 	  * Close [this] Page
 	  */
 	public function close():Void {
-		content.destroy();
+		(cache?content.detach:content.destroy)();
 		dispatch('close', null);
 		active = null;
 	}
@@ -90,9 +102,19 @@ class Page extends EventDispatcher {
 	public var village(get, never):Village;
 	private inline function get_village() return player.village;
 
+	/**
+	  * Whether [this] Page is minimized right now
+	  */
+	public var minimized(get, never):Bool;
+	private inline function get_minimized() {
+		return (active != this && cache);
+	}
+
 /* === Instance Fields === */
 
+	private var state : State;
 	private var content : Pane;
+	private var cache : Bool;
 
 /* === Static Fields === */
 
