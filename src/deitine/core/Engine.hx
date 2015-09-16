@@ -48,6 +48,11 @@ class Engine extends EventDispatcher {
 	  */
 	private function __init():Void {
 		clock.onTick( clockTick );
+
+		addSignals([
+			'load-game',
+			'new-game'
+		]);
 	}
 
 	/**
@@ -96,8 +101,13 @@ class Engine extends EventDispatcher {
 		var sd = new SaveData('deitine');
 		sd.load(function(data) {
 			onload.call( data );
-			if (data != null)
+			if (data != null) {
 				makeupdays(data['saved_at']);
+				dispatch('load-game', data);
+			}
+			else {
+				dispatch('new-game', null);
+			}
 			done();
 		});
 	}
@@ -170,8 +180,8 @@ class Engine extends EventDispatcher {
 		trace('In-Game Day took $wholeTime milliseconds to process');
 
 		/* reset the daysSinceLastPlayed field */
-		if (daysSinceLastPlayed > 0)
-			daysSinceLastPlayed = 0;
+		if (daysSinceLastPlayed != 1)
+			daysSinceLastPlayed = 1;
 
 		tick.call( date );
 		save();
