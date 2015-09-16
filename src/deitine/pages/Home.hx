@@ -17,12 +17,19 @@ class Home extends Page {
 		panes = new SplitPane([20, 80]);
 		left = panes.pane(0);
 		right = panes.pane(1);
-		on('open', function(x) content.activate());
 
-		build();
+		on('open', untyped onopen);
 	}
 
 /* === Instance Methods === */
+
+	/**
+	  * Handle the opening of [this] Page
+	  */
+	private function onopen():Void {
+		build();
+		content.activate();
+	}
 
 	/**
 	  * Build [this] Page
@@ -32,6 +39,29 @@ class Home extends Page {
 		h.textAlign = Center;
 		h.fontFamily = 'Impact';
 		append( h );
+		village.on('update', function(x) {
+			if (village.stopped) {
+				h.text = 'Game has Stopped Due to Lag :c';
+				h.textColor = '#FF0000';
+			}
+		});
+
+		var nav:Nav = new Nav();
+		append( nav );
+		
+		var homeLink = new Link('Home', '#home');
+		homeLink.textColor = '#666';
+		nav.addItem(homeLink);
+
+		var follLink = new Link('Followers', '#followers');
+		follLink.textColor = '#666';
+		follLink.on('click', function(e) {
+			trace('Opening Followers page..');
+			var fp = new Followers();
+			fp.open();
+		});
+		nav.addItem(follLink);
+
 		append( panes );
 
 		sidebar();
@@ -92,6 +122,15 @@ class Home extends Page {
 			newPriest.tiny = true;
 			group.addButton( newPriest );
 		}
+
+		var newGame = new Button('New Game');
+		newGame.tiny = true;
+		group.addButton( newGame );
+		newGame.on('click', function(e) {
+			tannus.chrome.Storage.local.clear(function() {
+				tannus.chrome.Runtime.reload();
+			});
+		});
 	}
 
 /* === Instance Fields === */
