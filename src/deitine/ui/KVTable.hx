@@ -61,6 +61,16 @@ class KVTable extends Pane {
 	}
 
 	/**
+	  * Gets a Row by name, creating it if necessary
+	  */
+	public inline function row(name : String):Row {
+		var r = getRow(name);
+		if (r == null)
+			r = addRow(name);
+		return r;
+	}
+
+	/**
 	  * Get the value of a Row, if it exists
 	  */
 	public function get(name : String):Null<String> {
