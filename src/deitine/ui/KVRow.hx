@@ -17,7 +17,7 @@ class KVRow extends Pane {
 		evalue = new Pane();
 		evalue.text = (v || '?');
 		evalue.styles.float( Right );
-		evalue.el['title'] = 'Tooltip';
+		tooltip = 'Tooltip';
 
 		clear = new Pane();
 		clear.el.css('clear', 'both');
@@ -45,6 +45,13 @@ class KVRow extends Pane {
 	public var value(get, set):String;
 	private inline function get_value() return evalue.text;
 	private inline function set_value(v : String) return (evalue.text = v);
+
+	/**
+	  * The tooltip of [this] Row
+	  */
+	public var tooltip(get, set):String;
+	private inline function get_tooltip() return (evalue.el['title'] || '');
+	private inline function set_tooltip(v) return (evalue.el['title'] = v);
 
 /* === Instance Fields === */
 
