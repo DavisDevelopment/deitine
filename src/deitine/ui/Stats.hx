@@ -22,6 +22,7 @@ class Stats extends Component {
 		table.heading.text = 'Stats';
 
 		table.activate();
+		update();
 	}
 
 /* === Instance Methods === */
@@ -64,7 +65,9 @@ class Stats extends Component {
 
 		/* The Number of Hunters */
 		table.set('hunters', num(Hunter).prettyInt());
-
+		
+		/* The Number of Scavengers */
+		table.set('scavenger', num(Scavenger).prettyInt());
 	}
 
 /* === Instance Fields === */
