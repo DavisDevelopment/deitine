@@ -6,6 +6,7 @@ import tannus.io.Ptr;
 
 import deitine.ds.Resource;
 import deitine.ds.State;
+import deitine.ds.inv.Materials;
 
 import haxe.macro.Expr;
 import haxe.macro.Context;
@@ -25,12 +26,18 @@ abstract Inventory (Invent) from Invent to Invent {
 			'leather' : (o['leather'] || 0)
 		});
 	}
+
+	@:op(A += B)
+	public inline function _pluseq(other : Inventory):Void {
+		this.absorb(other);
+	}
 }
 
 private class Invent {
-	public function new(i : Inv):Void {
+	public function new(i : Object):Void {
 		inv = i;
 		oinv = inv;
+		materials = new Materials({});
 	}
 
 /* === Instance Methods === */
@@ -39,20 +46,42 @@ private class Invent {
 	  * Add some Resource to [this] Inventory
 	  */
 	public function contribute(res:Resource, count:Int):Void {
-		var key:String = resname(res);
-		oinv[key] += count;
+		oinv[res] = (iget(res) + count);
 	}
 
 	/**
 	  * Use some Resource
 	  */
 	public function consume(res:Resource, count:Int):Bool {
-		var key:String = resname( res );
-		if (oinv[key] >= count) {
-			oinv[key] -= count;
+		if (iget(res) >= count) {
+			oinv[res] -= count;
 			return true;
 		}
 		return false;
+	}
+
+	/**
+	  * Query the quantity of [res] currently in-stock
+	  */
+	public function stock(res : Resource):Int {
+		return (iget(res));
+	}
+
+	/**
+	  * Reset all stocks to 0
+	  */
+	public function reset():Void {
+		for (k in oinv.keys())
+			oinv.set(k, 0);
+	}
+
+	/**
+	  * Absorb some other Inventory
+	  */
+	public function absorb(other : Inventory):Void {
+		for (k in other.oinv.keys())
+			oinv[k] += other.oinv[k];
+		materials.absorb(other.materials);
 	}
 
 	/**
@@ -65,6 +94,7 @@ private class Invent {
 		copy.wood = wood;
 		copy.meat = meat;
 		copy.leather = leather;
+		copy.materials = materials.clone();
 
 		return cast copy;
 	}
@@ -73,6 +103,14 @@ private class Invent {
 	  * Get the underlying Inv instance
 	  */
 	public function getInv():Inv return inv;
+
+	/**
+	  * Ensure that the value of the referenced key is not null
+	  */
+	private function iget(k : String):Int {
+		var v:Null<Int> = oinv.get( k );
+		return (v!=null?v:0);
+	}
 
 	/**
 	  * Get the field-name for the given Resource
@@ -122,6 +160,7 @@ private class Invent {
 
 	private var inv : Inv;
 	private var oinv : Obj;
+	public var materials : Materials;
 }
 
 private typedef Inv = {
@@ -130,4 +169,5 @@ private typedef Inv = {
 	var wood : Int;
 	var meat : Int;
 	var leather : Int;
+	var materials : Materials;
 };

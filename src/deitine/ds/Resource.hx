@@ -1,15 +1,26 @@
 package deitine.ds;
 
-enum Resource {
+import deitine.ds.Material;
+
+@:enum
+abstract Resource (String) to String {
 	/* Faith, for stuff */
-	Faith;
+	var Faith = 'faith';
 
 	/* Wood, for building things */
-	Wood;
+	var Wood = 'wood';
 
 	/* Meat, for eating */
-	Meat;
+	var Meat = 'meat';
 
 	/* Leather, for clothing */
-	Leather;
+	var Leather = 'leather';
+
+	/**
+	  * Resource FROM String
+	  */
+	@:from
+	public static inline function fromString(s : String):Resource {
+		return cast s;
+	}
 }
