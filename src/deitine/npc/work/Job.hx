@@ -19,6 +19,16 @@ class Job {
 		null;
 	}
 
+/* === Computed Instance Fields === */
+
+	/**
+	  * Experience Points gained each time [this] Job is performed
+	  */
+	public var xp(get, never):Int;
+	private function get_xp():Int {
+		return 0;
+	}
+
 /* === Instance Fields === */
 
 	public var human : Human;
