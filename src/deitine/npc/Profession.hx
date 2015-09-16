@@ -35,11 +35,17 @@ abstract Profession (Int) from Int to Int {
 	public inline function getClass():Class<Job> {
 		var p:Profession = this;
 		switch ( p ) {
+			case Priest:
+				return Preaching;
+
 			case Woodcutter:
 				return Woodcutting;
 
 			case Hunter:
 				return Hunting;
+
+			case Scavenger:
+				return Scavenging;
 
 			default:
 				return Job;

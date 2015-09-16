@@ -2,6 +2,7 @@ package deitine.npc.work;
 
 import deitine.npc.work.Job;
 import deitine.npc.Village;
+import deitine.npc.Village.instance in village;
 import deitine.npc.Profession;
 import deitine.ds.Inventory;
 
@@ -10,12 +11,11 @@ class Preaching extends Job {
 	/**
 	  * Perform [this] Job
 	  */
-	override public function perform(i : Inventory):Void {
-		i.consume(Meat, 1);
-		var village:Village = cast human.engine.query('deitine.npc.Village')[0];
-		for (v in village.villagers) {
-			if (v.profession != Profession.Priest) {
-			}
-		}
+	override public function perform(i:Inventory, days:Int):Void {
+		super.perform(i, days);
+	}
+
+	override private function get_xp():Int {
+		return village.population;
 	}
 }
