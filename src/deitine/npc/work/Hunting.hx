@@ -12,13 +12,17 @@ class Hunting extends Job {
 	  */
 	override public function perform(i:Inventory, days:Int):Void {
 		/* Amount gained from each kill */
-		var amount:Int = ((2 * human.level) * days);
+		var amount:Int = Std.int(((2 * human.level) * days) / 2);
 
 		/* For each Kill, 2 Meat & 2 Leather are gained */
 		i.meat += amount;
 		i.leather += amount;
 
 		/* The Hunter gains experience from these kills */
-		human.xp += human.job_xp;
+		human.giveXp();
+	}
+
+	override private function get_xp():Int {
+		return 10;
 	}
 }
