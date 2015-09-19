@@ -14,18 +14,7 @@ class Scavenging extends Job {
 	  * Perform Scavenging
 	  */
 	override public function perform(inv:Inventory, days:Int):Void {
-		var mat = inv.materials;
-
-		var mats:Array<Material> = cast Material.all();
-		var finds:Int = [0, (3 * human.level * days)].randint();
-		
-		while (finds > 1) {
-			var q:Int = [0, finds].randint();
-			mat.contribute(mats.choice(), q);
-			finds -= q;
-		}
-
-		human.giveXp();
+		null;
 	}
 
 	override private function get_xp() return 5;
