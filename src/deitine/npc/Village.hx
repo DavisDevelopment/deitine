@@ -115,10 +115,16 @@ class Village extends EntityContainer {
 	public function load(data : Object):Void {
 		if (data == null)
 			return ;
-		var datas:Array<HumanData> = cast data['village'];
-		villagers = datas.map(function(d) {
-			return new Human( d );
-		});
+		var datas:Null<Array<HumanData>> = cast data['village'];
+		if (datas != null) {
+			villagers = datas.map(function(d) {
+				return new Human( d );
+			});
+		}
+		else {
+			villagers = new Array();
+			addVillager(Human.create());
+		}
 	}
 
 	/**
