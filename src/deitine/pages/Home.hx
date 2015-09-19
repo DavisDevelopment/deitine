@@ -123,12 +123,23 @@ class Home extends Page {
 			group.addButton( newPriest );
 		}
 
+		/* Button to Start a new Game */
 		var newGame = new Button('New Game');
 		newGame.tiny = true;
 		group.addButton( newGame );
 		newGame.on('click', function(e) {
 			tannus.chrome.Storage.local.clear(function() {
 				tannus.chrome.Runtime.reload();
+			});
+		});
+
+		/* Button to Save Game-State to a File */
+		var expGame = new Button('Save Game');
+		expGame.tiny = true;
+		group.addButton( expGame );
+		expGame.on('click', function(e) {
+			tannus.chrome.Storage.local.get(null, function(res) {
+				trace( res );
 			});
 		});
 	}
