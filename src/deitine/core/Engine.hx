@@ -12,6 +12,7 @@ import deitine.time.Clock;
 import deitine.time.GameDate;
 import deitine.core.Entity;
 import deitine.core.Player;
+import deitine.storage.StateManager;
 
 using Lambda;
 
@@ -34,6 +35,7 @@ class Engine extends EventDispatcher {
 			player = new Player();
 			attach( player );
 
+			sman = StateManager.create();
 			daysSinceLastPlayed = 0;
 
 			__init();
@@ -86,9 +88,8 @@ class Engine extends EventDispatcher {
 		};
 		onsave.call( state );
 		var saveTime = Ct.time({
-			var data:SaveData = new SaveData('deitine', state);
-			data.save(function() {
-				trace('Game Saved!');
+			sman.save(state, function() {
+				trace('Game Saved');
 			});
 		});
 		trace('Engine took ${saveTime}ms to save the game');
@@ -98,8 +99,7 @@ class Engine extends EventDispatcher {
 	  * Load [this] Game
 	  */
 	public function load(done : Void->Void):Void {
-		var sd = new SaveData('deitine');
-		sd.load(function(data) {
+		sman.load(function(data) {
 			onload.call( data );
 			if (data != null) {
 				makeupdays(data['saved_at']);
@@ -194,6 +194,7 @@ class Engine extends EventDispatcher {
 
 	/* internal meta-data fields */
 	public var daysSinceLastPlayed : Int;
+	private var sman : StateManager;
 
 	public var player : Player;
 	public var date : GameDate;

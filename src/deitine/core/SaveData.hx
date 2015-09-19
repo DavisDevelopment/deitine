@@ -32,7 +32,8 @@ class SaveData {
 			var sd:String = Std.string(d[name] || '');
 			if (sd == '') {
 				done(null);
-			} else {
+			} 
+			else {
 				var tdata = unserialize(sd);
 				data = tdata;
 				done( data );
