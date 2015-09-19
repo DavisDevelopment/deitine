@@ -2,8 +2,10 @@ package deitine.ds.skills;
 
 import tannus.ds.Value;
 import tannus.io.Struct;
+import tannus.io.Signal;
 import tannus.math.Percent;
 
+import deitine.npc.Human;
 import deitine.ds.skills.SkillType;
 
 import haxe.Serializer;
@@ -11,10 +13,11 @@ import haxe.Unserializer;
 
 class Skill {
 	/* Constructor Function */
-	public function new(kind:SkillType, ?lvl:Int, ?xp:Int):Void {
-		type = kind;
+	public function new(h:Human, ?lvl:Int, ?xp:Int):Void {
+		human = h;
 		level = (lvl!=null ? lvl : 15);
 		points = (xp!=null ? xp  : 0);
+		levelIncreased = new Signal();
 	}
 
 /* === Instance Methods === */
@@ -22,16 +25,16 @@ class Skill {
 	/**
 	  * Calculate how many points are needed to advance to the next level
 	  */
-	private function nextLevel():Int {
-		return Std.int(improve_mult() * Math.pow(level, 1.95) + improve_offset());
+	private function next_level():Int {
+		return Math.floor(improve_mult() * Math.pow(level, 1.95) + improve_offset());
 	}
 
 	/**
 	  * Earn some points for [this] Skill
 	  */
-	public function addXp(n : Int):Bool {
+	public function give_xp(n : Int):Bool {
 		points += n;
-		var max = nextLevel();
+		var max = next_level();
 		if (points >= max) {
 			points -= max;
 			level_up();
@@ -45,6 +48,8 @@ class Skill {
 	  */
 	private function level_up():Void {
 		level++;
+		levelIncreased.call( level );
+		trace('Human levelled up a Skill!');
 	}
 
 	/**
@@ -61,12 +66,35 @@ class Skill {
 		return 0;
 	}
 
+	/**
+	  * serialize [this] Skill
+	  */
+	@:keep
+	private function hxSerialize(s : Serializer):Void {
+		var add = s.serialize.bind(_);
+
+		add(level);
+		add(points);
+	}
+
+	/**
+	  * unserialize [this] Skill
+	  */
+	@:keep
+	private function hxUnserialize(u : Unserializer):Void {
+		var get = u.unserialize.bind();
+		
+		levelIncreased = new Signal();
+		level = get();
+		points = get();
+	}
+
 /* === Computed Instance Fields === */
 
 	/* Progress towards the next level */
 	public var progress(get, never):Percent;
 	private function get_progress() {
-		return Percent.percent(points, nextLevel());
+		return Percent.percent(points, next_level());
 	}
 
 /* === Instance Fields === */
@@ -77,6 +105,9 @@ class Skill {
 	/* The number of points toward the next level */
 	private var points : Int;
 
-	/* The type of Skill [this] is */
-	public var type : SkillType;
+	/* Signal which emits when the [level] of [this] Skill is increased */
+	public var levelIncreased : Signal<Int>;
+
+	/* The Human that [this] Skill is attached to */
+	private var human : Human;
 }

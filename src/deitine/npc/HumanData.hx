@@ -18,6 +18,7 @@ typedef HumanData = {
 	var experience : Int;
 
 	/* == Stats == */
+	@:optional
 	var stats : HumanStats;
 
 	/* == Should Be a Stat == */
