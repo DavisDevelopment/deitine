@@ -31,7 +31,7 @@ class Human extends Entity {
 		gender = data.gender;
 
 		//- Create the Human's Stats
-		stats = data.stats;
+		stats = (data.stats!=null?data.stats:new Stats(this));
 
 		//- Human's total faith (as a Value)
 		state.set('faith', data.base_faith);
@@ -65,7 +65,8 @@ class Human extends Entity {
 		/* == Initialization Methods == */
 		prepareValues();
 		addSignals([
-			'death'
+			'death',
+			'level-up'
 		]);
 	}
 
@@ -75,7 +76,12 @@ class Human extends Entity {
 	  * Prepare all Values associated with [this] Human
 	  */
 	private function prepareValues():Void {
-		null;
+		var demSkillz = [stats.strength, stats.awareness, stats.charisma, stats.speed, stats.intelligence];
+		for (skill in demSkillz) {
+			skill.levelIncreased.on(function(nlvl) {
+				dispatch('level-up', nlvl);
+			});
+		}
 	}
 
 	/**
@@ -115,7 +121,7 @@ class Human extends Entity {
 	  */
 	public function work(inc:Inventory, days:Int=1):Inventory {
 		/* Human will only work if they aren't too tired to */
-		if (stats.exhaustion < 12) {
+		if (job.will_perform()) {
 			job.perform(inc, days);
 		}
 
@@ -137,6 +143,7 @@ class Human extends Entity {
 
 		if (canSleep) {
 			stats.exhaustion -= 2;
+			stats.happiness += 2;
 		}
 		else {
 			stats.exhaustion += 2;
@@ -175,7 +182,6 @@ class Human extends Entity {
 			levelUp();
 		}
 		state.set('xp', nxp);
-
 	}
 
 	/**
@@ -307,7 +313,7 @@ class Human extends Entity {
 			'max_age': ([21, 50].randint() * DAYS_PER_YEAR),
 			'level': 1,
 			'experience': 0,
-			'stats' : new Stats()
+			'stats' : null
 		};
 
 		/* Ensure that the randomly selected Profession is a valid choice */
