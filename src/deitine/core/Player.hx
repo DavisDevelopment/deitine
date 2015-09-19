@@ -30,7 +30,8 @@ class Player extends Entity {
 		engine.onload.on( load );
 
 		instance = this;
-		trace(hasPerk(Breeding));
+
+		mentionPerks();
 	}
 
 /* === Instance Methods === */
@@ -40,11 +41,13 @@ class Player extends Entity {
 	  */
 	override public function update():Void {
 		super.update();
+	}
 
-		var perkList = ConditionalPerk.getMet();
-		for (p in perkList) {
-			addPerk(cast p);
-		}
+	/**
+	  * Perform checks for all relevant Perks, to ensure that they're referenced
+	  */
+	private function mentionPerks():Void {
+		null;
 	}
 
 	/**
@@ -62,6 +65,8 @@ class Player extends Entity {
 	  */
 	override public function day(g : deitine.time.GameDate):Void {
 		dispatch('day', g);
+
+		update();
 	}
 
 	/**
@@ -70,7 +75,7 @@ class Player extends Entity {
 	public function save(data : Object):Void {
 		data['player'] = {
 			'inventory': inv.toObject(),
-			'perks': [for (p in perks) Type.getClassName(Type.getClass(p))]
+			'perks': perks
 		};
 	}
 
@@ -86,9 +91,12 @@ class Player extends Entity {
 
 		/* Load the Player's perks */
 		perks = new Array();
-		var savedPerks:Array<String> = cast data['perks'];
-		for (name in savedPerks) {
-			addPerk(cast Type.resolveClass( name ));
+		var savedPerks:Null<Array<String>> = cast data['perks'];
+		if (savedPerks != null) {
+			for (name in savedPerks) {
+				trace('Loading $name perk');
+				addPerk(EPerk.Normal(name));
+			}
 		}
 	}
 
@@ -103,55 +111,20 @@ class Player extends Entity {
 	}
 
 	/**
-	  * Get a reference to a Perk, queried by Class
-	  */
-	private function getPerkByClass(klass : Class<Perk>):Null<Perk> {
-		var perk:Perk = Type.createInstance(klass, []);
-		return getPerkByName(perk.name);
-	}
-
-	/**
 	  * Add a new Perk to the List
 	  */
-	public function addPerk(k : Class<Perk>) {
-		var p:Perk = Type.createInstance(k, []);
-		if (k == ConditionalPerk) {
-			var met:Void->Bool = Reflect.getProperty(cast k, 'met');
-
-			on('day', function(n) {
-				if (met()) {
-					trace('Shit is going on');
-					p.affect();
-				}
-				perks.push( p );
-			});
-		}
-		else {
-			p.affect();
-			perks.push( p );
-		}
+	public function addPerk(k : Perk) {
+		perks.push(k);
 	}
 
 	/**
 	  * Check whether the Player has the given Perk
 	  */
 	public function hasPerk(nam : Dynamic):Bool {
-		if (Std.is(nam, String)) {
-			return (getPerkByName(cast nam) != null);
-		}
-		else {
-			var tn:String = Tt.typename( nam );
-			switch ( tn ) {
-				case 'Class<deitine.ds.Perk>':
-					return (getPerkByClass(cast nam) != null);
-
-				case (_ => n) if (n.startsWith('Class<deitine.ds.perks.')):
-					return (getPerkByClass(cast nam) != null);
-
-				default:
-					return false;
-			}
-		}
+		for (p in perks)
+			if (p.name == nam)
+				return true;
+		return false;
 	}
 
 /* === Computed Instance Fields === */
@@ -161,7 +134,7 @@ class Player extends Entity {
 	  */
 	public var village(get, never):Village;
 	private function get_village():Village {
-		return cast engine.query('deitine.npc.Village')[0];
+		return Village.instance;
 	}
 
 	/**
